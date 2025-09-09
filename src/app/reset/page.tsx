@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from "react"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 export default function PasswordResetpage() {

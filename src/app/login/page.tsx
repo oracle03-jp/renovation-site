@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from "react"
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -35,7 +35,7 @@ export default function LoginPage() {
                 <button className="w-full border p-2 rounded" disabled={loading}>{loading?'ログイン中…':'ログイン'}</button>
                 {error && <p className="text-sm text-red-600">{error}</p>}
             </form>
-            <p className="text-sm">未登録？ <Link className="underLine" href="/register">新規登録</Link></p>
+            <p className="text-sm"><Link className="underLine" href="/register">新規登録</Link></p>
             <p className="text-sm"><Link className="underline" href="/reset/request">パスワードをお忘れの方</Link></p>
         </main>
     )

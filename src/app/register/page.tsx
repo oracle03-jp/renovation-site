@@ -7,6 +7,7 @@ export default function RegisterPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [passwordConf, setPasswordConf] = useState('')
+    const [username, setUsername] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
@@ -17,7 +18,13 @@ export default function RegisterPage() {
         if (password !== passwordConf) return setError('確認用パスワードが一致しません')
         setError(null);
         setLoading(true)
-        const { error } = await supabase.auth.signUp({ email, password})
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { username: username.trim() }
+            }
+        })
         setLoading(false)
         if (error) return setError(error.message)
         router.push('/login?registered=1')

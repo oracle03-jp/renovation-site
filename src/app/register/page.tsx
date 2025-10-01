@@ -16,6 +16,7 @@ export default function RegisterPage() {
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (password !== passwordConf) return setError('確認用パスワードが一致しません')
+        if (!username.trim()) return setError("ユーザー名を入力してください")
         setError(null);
         setLoading(true)
         const { error } = await supabase.auth.signUp({
@@ -46,6 +47,13 @@ export default function RegisterPage() {
           新規登録
         </h1>
         <form onSubmit={onSubmit} className="space-y-4">
+          <input
+            placeholder='ユーザー名'
+            value={username} 
+            onChange={e=>setUsername(e.target.value)} 
+            required
+            className="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0a714e]"
+          />
           <input
             type="email"
             placeholder="メールアドレス"

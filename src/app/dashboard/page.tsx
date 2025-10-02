@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import SignOutButton from './signout'
+import NavigationBar from '@/components/ui/navigationbar'
 
 export default async function Dashboard() {
     const supabase = await createClient()
@@ -17,18 +18,19 @@ export default async function Dashboard() {
 return (
   <div className="min-h-screen bg-[#f6eee1]">
     {/* ヘッダー */}
-    <header className="bg-[#0a714e] text-white py-4 px-6">
-      <h1 className="text-lg font-bold">
-        空き家リノベーションサイト
-      </h1>
-    </header>
+    <NavigationBar user={user} />
+    
 
     {/* メインコンテンツ */}
-    <main className="flex items-center justify-center p-4">
+    <main className="md:pl-20 pt-20 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 space-y-6 mt-6">
         <h1 className="text-2xl font-bold text-black text-center">
-          ログイン中: {user.email}
+              {/* user.user_metadata.username で名前を表示 */}
+              ようこそ、{user.user_metadata.username}さん
         </h1>
+        <p className="text-2xl font-bold text-black text-center">
+          ログイン中: {user.email}
+        </p>
         <SignOutButton />
       </div>
     </main>

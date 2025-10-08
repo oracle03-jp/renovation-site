@@ -32,18 +32,18 @@ export default function ResetRequestPage() {
     //     </main>
     // )
 return (
-  <div className="min-h-screen bg-[#f6eee1]">
+  <div className="min-h-screen bg-[#eeeded]">
     {/* ヘッダー */}
-    <header className="bg-[#0a714e] text-white py-4 px-6">
+    <header className="bg-[#004aad] text-white py-4 px-6">
       <h1 className="text-lg font-bold">
         空き家リノベーションサイト
       </h1>
     </header>
 
     {/* メインコンテンツ */}
-    <main className="flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 space-y-6 mt-6">
-        <h1 className="text-2xl font-bold text-black text-center">
+    <main className="flex items-start justify-center min-h-screen p-10 pt-30">
+      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-16 space-y-12">
+        <h1 className="text-4xl font-bold text-black text-center">
           パスワード再設定メール
         </h1>
         <form onSubmit={onSubmit} className="space-y-4">
@@ -53,16 +53,16 @@ return (
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            className="w-full p-3 rounded border border-[#0a714e] focus:outline-none focus:ring-2 focus:ring-[#0a714e]"
+            className="w-full p-3 rounded border border-gray-300 bg-[#eeeded] focus:outline-none focus:ring-2 focus:ring-[#004aad]"
           />
           <button
             type="submit"
-            className="w-full bg-[#7a4900] hover:bg-[#5c3600] text-white font-semibold py-3 rounded-lg transition-colors"
+            className="w-full bg-[#004aad] hover:bg-[#004aad] text-white font-semibold py-3 rounded-lg transition-colors"
           >
             メールを送信
           </button>
         </form>
-        {msg && <p className="text-sm text-[#0a714e] text-center">{msg}</p>}
+        {msg && <p className="text-sm text-[#004aad] text-center">{msg}</p>}
         {error && <p className="text-sm text-red-600 text-center">{error}</p>}
       </div>
     </main>

@@ -26,35 +26,35 @@ export default function LoginPage() {
     }
 
     return (
-  <div className="min-h-screen bg-[#f6eee1]">
+  <div className="min-h-screen bg-[#eeeded]">
     {/* ヘッダー */}
-    <header className="bg-[#0a714e] text-white py-4 px-6">
+    <header className="bg-[#004aad] text-white py-4 px-6">
       <h1 className="text-lg font-bold">
         空き家リノベーションサイト
       </h1>
     </header>
 
     {/* メインコンテンツ */}
-    <main className="flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 space-y-6 mt-6">
-        <h1 className="text-2xl font-bold text-black text-center">
+    <main className="flex items-start justify-center min-h-screen p-10 pt-30">
+      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-16 space-y-12">
+        <h1 className="text-4xl font-bold text-black text-center">
           ログイン
         </h1>
 
         {registered && (
-          <p className="text-sm text-center text-[#0a714e]">
+          <p className="text-lg text-center text-[#004aad]">
             メール認証後にログインできます。
           </p>
         )}
 
-        <form onSubmit={onLogin} className="space-y-4">
+        <form onSubmit={onLogin} className="space-y-8">
           <input
             type="email"
             placeholder="メールアドレス"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0a714e]"
+            className="w-full p-3 rounded border border-gray-300 bg-[#eeeded] focus:outline-none focus:ring-2 focus:ring-[#004aad]"
           />
           <input
             type="password"
@@ -62,12 +62,12 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0a714e]"
+            className="w-full p-3 rounded border border-gray-300 bg-[#eeeded] focus:outline-none focus:ring-2 focus:ring-[#004aad]"
           />
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#7a4900] hover:bg-[#5c3600] text-white font-semibold py-3 rounded-lg transition-colors"
+            className="w-full bg-[#004aad] hover:bg-[#004aad] text-white font-semibold py-3 rounded-lg transition-colors"
           >
             {loading ? 'ログイン中…' : 'ログイン'}
           </button>
@@ -76,10 +76,10 @@ export default function LoginPage() {
         {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
         <div className="flex flex-col space-y-2 text-center">
-          <Link className="underline text-[#0a714e]" href="/register">
+          <Link className="underline text-[#004aad]" href="/register">
             新規登録
           </Link>
-          <Link className="underline text-[#0a714e]" href="/reset/request">
+          <Link className="underline text-[#004aad]" href="/reset/request">
             パスワードをお忘れの方
           </Link>
         </div>

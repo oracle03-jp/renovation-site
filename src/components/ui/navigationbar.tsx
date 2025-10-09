@@ -47,22 +47,24 @@ export default function NavigationBar({ user }: NavigationBarProps) {
           </a>
         </li>
 
-        <li>
-          <a href="/post/new" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
-            <PlusIcon />
-            <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2
-                         w-auto min-w-max p-2 rounded-md shadow-md
-                         text-white bg-gray-900 text-sm font-bold
-                         transition-all duration-150 scale-0 origin-top group-hover:scale-100
-                         md:left-full md:top-1/2 md:-translate-y-1/2 md:-translate-x-0 md:mt-0 md:ml-4 md:origin-left">
-              投稿
-            </span>
-          </a>
-        </li>
+        {user && (
+          <li>
+            <a href="/post/create" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
+              <PlusIcon />
+              <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2
+                           w-auto min-w-max p-2 rounded-md shadow-md
+                           text-white bg-gray-900 text-sm font-bold
+                           transition-all duration-150 scale-0 origin-top group-hover:scale-100
+                           md:left-full md:top-1/2 md:-translate-y-1/2 md:-translate-x-0 md:mt-0 md:ml-4 md:origin-left">
+                投稿
+              </span>
+            </a>
+          </li>
+        )}
 
         {user && (
           <li>
-            <a href="/account" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
+            <a href="/dashboard" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
               <UserIcon />
               <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2
                                w-auto min-w-max p-2 rounded-md shadow-md text-white bg-gray-900 text-sm font-bold

@@ -17,7 +17,6 @@ export default function PostCard({ post, onOpen, currentUserId, onDeleted }: Pro
   const supabase = createClient()
   const isOwner = !!currentUserId && post.user?.id === currentUserId
 
-  // --- 画像まわり（配列対応 + フォールバック） ---
   const imageUrls = Array.isArray((post as any).image_urls)
     ? ((post as any).image_urls as string[])
     : []

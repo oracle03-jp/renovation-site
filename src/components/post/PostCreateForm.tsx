@@ -20,8 +20,8 @@ type PreviewItem = { file: File; url: string }
 
 export default function PostCreateForm() {
   const [title, setTitle] = useState('')
-  const [files, setFiles] = useState<File[]>([])               // ← 複数化
-  const [previews, setPreviews] = useState<PreviewItem[]>([])  // ← 複数プレビュー
+  const [files, setFiles] = useState<File[]>([])               // 配列にすることで複数化
+  const [previews, setPreviews] = useState<PreviewItem[]>([])  // 複数プレビュー
   const [authorComment, setAuthorComment] = useState('')
   const [loading, setLoading] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
@@ -30,15 +30,11 @@ export default function PostCreateForm() {
   const MAX_SIZE_MB = 10
   const ACCEPTED_TYPES = ['image/png', 'image/jpeg']
 
-  // プレビュー生成・クリーンアップ
   useEffect(() => {
-    // 既存URL解放
     previews.forEach(p => URL.revokeObjectURL(p.url))
     const next = files.map(f => ({ file: f, url: URL.createObjectURL(f) }))
     setPreviews(next)
-    // cleanup
     return () => next.forEach(p => URL.revokeObjectURL(p.url))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files])
 
   const addFiles = (list: FileList | File[]) => {

@@ -18,7 +18,7 @@ export default async function Home() {
           <p className="text-center text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
           増え続ける「空き家」は、社会の新たな資源です。
           <br></br>放置された空き家を、私たちは未来を創る場所へと生まれ変わらせます。
-          <br></br>今こそ、空き家の可能性を一緒に広げましょう。
+          <br></br>今こそ、空き家の可能性を一緒に広げましょう。aiouugifu
           </p>
           <div className="flex justify-between items-center mb-4 p-4">
           <h1 className="text-2xl font-bold p-4">投稿一覧</h1>

@@ -122,14 +122,15 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
     const maxModalH = Math.min(viewport.h * 0.92, 1000)
 
     const maxImageW = Math.max(320, maxModalW - sidebarW)
-    const maxImageH = maxModalH
+    const MOBILE_COMMENTS_RESERVED = 320
+    const maxImageH = isMd ? maxModalH : Math.max(160,maxModalH - MOBILE_COMMENTS_RESERVED)
 
     const scale = Math.min(maxImageW / natural.w, maxImageH / natural.h)
     const imgW = Math.floor(natural.w * scale)
     const imgH = Math.floor(natural.h * scale)
 
     const modalW = imgW + sidebarW
-    const modalH = imgH
+    const modalH = isMd ? imgH : Math.min(maxModalH, maxModalH + MOBILE_COMMENTS_RESERVED)
 
     return { imgW, imgH, modalW, modalH }
   }, [natural, viewport])
@@ -160,7 +161,7 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
         </DialogHeader>
 
         {post && (
-          <div className="grid h-full grid-cols-1 md:grid-cols-[1fr_minmax(360px,420px)]">
+          <div className="grid h-full max-h-full overflow-hidden grid-cols-1 md:grid-cols-[1fr_minmax(360px,420px)] grid-rows-[minmax(0,1fr)_minmax(280px,auto)] md:grid-rows-none">
             {/* 左：画像ギャラリー */}
             <div className="relative flex h-full min-w-0 flex-col bg-gray-100">
               {/* メインビュー */}
@@ -263,7 +264,7 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
             </div>
 
             {/* 右：コメント */}
-            <div className="flex h-full min-h-0 flex-col border-l bg-white">
+            <div className="flex h-full min-h-0 flex-col md:border-l bg-white">
               <section className="flex items-start justify-between border-b p-4">
                 <div className="space-y-1">
                   <div className="text-sm text-gray-500">

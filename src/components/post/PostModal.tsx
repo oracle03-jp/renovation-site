@@ -46,6 +46,9 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
   const images = usePostImages(post)
   const [index, setIndex] = useState(0)
 
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null)
+  const [viewport, setViewport] = useState<{ w: number; h: number }>({ w: 0, h: 0})
+
   // Postが変わったらインデックス初期化
   useEffect(() => setIndex(0), [post?.id])
 
@@ -96,10 +99,40 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
   useEffect(() => {
     setImgLoaded(false)
     setImgError(false)
+    setNatural(null)
   }, [images, index])
 
   // お隣先読み
   usePreloadNeighbors(images, index)
+
+  useEffect(() => {
+    if (!open) return
+    const set = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
+    set()
+    window.addEventListener('resize', set)
+    return () => window.removeEventListener('resize', set)
+  }, [open])
+
+  const fit = useMemo(() => {
+    if (!natural || viewport.w === 0 || viewport.h === 0) return null
+    const isMd = viewport.w >= 768
+    const sidebarW = isMd ? 420 : 0
+
+    const maxModalW = Math.min(viewport.w * 0.96, 1440)
+    const maxModalH = Math.min(viewport.h * 0.92, 1000)
+
+    const maxImageW = Math.max(320, maxModalW - sidebarW)
+    const maxImageH = maxModalH
+
+    const scale = Math.min(maxImageW / natural.w, maxImageH / natural.h)
+    const imgW = Math.floor(natural.w * scale)
+    const imgH = Math.floor(natural.h * scale)
+
+    const modalW = imgW + sidebarW
+    const modalH = imgH
+
+    return { imgW, imgH, modalW, modalH }
+  }, [natural, viewport])
 
   const handleDelete = async () => {
     if (!post || !isOwner) return
@@ -121,18 +154,18 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-6xl p-0 sm:rounded-2xl">
+      <DialogContent className="p-0 shadow-none bg-transparent rounded-none sm:rounded-none max-w-none sm:max-w-none w-auto h-auto" style={fit ? { width: fit.modalW, height: fit.modalH} : undefined}>
         <DialogHeader className="sr-only">
           <DialogTitle>投稿詳細</DialogTitle>
         </DialogHeader>
 
         {post && (
-          <div className="grid h-[85vh] grid-cols-1 md:grid-cols-[1fr_minmax(360px,420px)]">
+          <div className="grid h-full grid-cols-1 md:grid-cols-[1fr_minmax(360px,420px)]">
             {/* 左：画像ギャラリー */}
-            <div className="relative flex h-full flex-col bg-gray-100">
+            <div className="relative flex h-full min-w-0 flex-col bg-gray-100">
               {/* メインビュー */}
               <div
-                className="relative flex-1 select-none overflow-hidden"
+                className="relative flex-1 min-h-0 select-none overflow-hidden"
                 onTouchStart={onTouchStart}
                 onTouchEnd={onTouchEnd}
               >
@@ -144,14 +177,19 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
                     )}
 
                     {/* 画像 or エラー表示 */}
+                    <div className='flex h-full w-full items-center justify-center'>
                     {!imgError ? (
                       <img
                         key={images[index]}
                         src={images[index]}
                         alt={`${post.title ?? 'image'} (${index + 1}/${images.length})`}
-                        className={`absolute inset-0 m-auto max-h-full max-w-full object-contain transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                        className={`block h-full w-full object-contain transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
                         draggable={false}
-                        onLoad={() => setImgLoaded(true)}
+                        onLoad={(e) => {
+                          const el = e.currentTarget
+                          setNatural({ w : el.naturalWidth, h: el.naturalHeight})
+                          setImgLoaded(true)
+                        }}
                         onError={() => setImgError(true)}
                       />
                     ) : (
@@ -162,7 +200,7 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
                         </div>
                       </div>
                     )}
-
+                    </div>
                     {/* 左右ナビ */}
                     {images.length > 1 && (
                       <>

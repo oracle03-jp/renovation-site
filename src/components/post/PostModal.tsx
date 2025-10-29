@@ -130,7 +130,7 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
     const imgH = Math.floor(natural.h * scale)
 
     const modalW = imgW + sidebarW
-    const modalH = isMd ? imgH : Math.min(maxModalH, maxModalH + MOBILE_COMMENTS_RESERVED)
+    const modalH = maxModalH
 
     return { imgW, imgH, modalW, modalH }
   }, [natural, viewport])

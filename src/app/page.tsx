@@ -15,10 +15,13 @@ export default async function Home() {
       <main className="md:pl-20 pt-20">
         <div className="p-6">
           {/* 空き家キャッチコピーを追加 */}
-          <p className="text-center text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          増え続ける「空き家」は、社会の新たな資源です。
-          <br></br>放置された空き家を、私たちは未来を創る場所へと生まれ変わらせます。
-          <br></br>今こそ、空き家の可能性を一緒に広げましょう。
+          <p className="max-w-3xl mx-auto text-left text-lg leading-relaxed font-medium text-white bg-[#004aad] p-8 rounded-2xl shadow-xl border border-blue-300/30">
+          --Akilier（アキリエ） アプリ概要--<br></br>
+          Akilier（アキリエ）は、全国的に拡大している空き家問題の認知と解決を目指すSNSアプリです。<br></br>
+          空き家の写真まどを投稿し、その空き家の活用・リノベーションアイデアをシェアすることができます。<br></br>
+          また、他のユーザーから多様な意見やリノベーション案、アドバイスを募ることも可能です。<br></br>
+          Akilierは空き家に新しい価値を創造し、ユーザー同士の交流や問題意識の向上を促進します。<br></br>
+          幅広いユーザーが参加できるプラットフォームです。
           </p>
           <div className="flex justify-between items-center mb-4 p-4">
           <h1 className="text-2xl font-bold p-4">投稿一覧</h1>

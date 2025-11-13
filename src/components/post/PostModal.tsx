@@ -6,8 +6,9 @@ import CommentInput from './comments/CommentInput'
 import type { Post } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { extractImagePath } from '@/lib/storage'
-import { Trash2, ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
+import { Trash2, ChevronLeft, ChevronRight, ImageOff, Heart } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { formatPostDate } from '@/lib/utils'
 
 type Props = {
   post: Post | null
@@ -15,6 +16,9 @@ type Props = {
   onOpenChange: (open: boolean) => void
   currentUserId: string | null
   onDeleted: (id: string) => void
+  likeCount: number
+  isLiked: boolean
+  onToggleLike: () => void
 }
 
 // Post に image_urls?: string[] を追加した想定。
@@ -39,7 +43,7 @@ function usePreloadNeighbors(images: string[], index: number) {
   }, [images, index])
 }
 
-export default function PostModal({ post, open, onOpenChange, currentUserId, onDeleted }: Props) {
+export default function PostModal({ post, open, onOpenChange, currentUserId, onDeleted, likeCount, isLiked, onToggleLike }: Props) {
   const supabase = createClient()
   const isOwner = !!post && !!currentUserId && post.user?.id === currentUserId
 
@@ -273,6 +277,9 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
                   <p className="whitespace-pre-wrap text-gray-800">
                     {post.author_comment ?? '—'}
                   </p>
+                  <time className="text-xs text-gray-500 pt-1" dateTime={post.created_at}>
+                    {formatPostDate(post.created_at)}
+                  </time>
                 </div>
 
                 {isOwner && (
@@ -286,7 +293,26 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
                   </button>
                 )}
               </section>
-
+              <section className="flex items-center gap-4 border-b p-3">
+                <button
+                  className="flex items-center gap-1.5 text-sm text-gray-700 hover:text-red-500"
+                  onClick={() => {
+                    if (!currentUserId) {
+                      alert('いいね機能を利用するにはログインが必要です。');
+                      return;
+                    }
+                    onToggleLike();
+                  }}
+                >
+                  <Heart
+                    className={`size-5 ${isLiked ? 'text-red-500' : ''}`}
+                    fill={isLiked ? 'currentColor' : 'none'}
+                  />
+                  <span className={`font-medium ${isLiked ? 'text-red-500' : ''}`}>
+                    {likeCount}
+                  </span>
+                </button>
+              </section>
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <CommentList postId={post.id} />
               </div>

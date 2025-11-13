@@ -11,6 +11,7 @@ export type Post = {
     author_comment: string | null
     created_at: string
     user: Profile
+    likes: Like[]
 }
 
 export type Comment = {
@@ -18,4 +19,10 @@ export type Comment = {
     body: string
     created_at: string
     user: Profile
+}
+
+export type Like = {
+  user_id: string
+  post_id: string
+  created_at: string
 }

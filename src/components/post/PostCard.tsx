@@ -1,19 +1,24 @@
 'use client'
 
 import type { Post } from '@/lib/types'
-import { MessageCircle, Trash2, Images } from 'lucide-react'
+import { MessageCircle, Trash2, Images, Heart } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { extractImagePath } from '@/lib/storage'
 import { useState } from 'react'
+import { formatPostDate } from '@/lib/utils'
 
 type Props = { 
   post: Post
   onOpen: () => void 
   currentUserId: string | null 
   onDeleted: (id: string) => void 
+  likeCount: number
+  isLiked: boolean
+  onToggleLike: () => void
 }
 
-export default function PostCard({ post, onOpen, currentUserId, onDeleted }: Props) {
+
+export default function PostCard({ post, onOpen, currentUserId, onDeleted, likeCount, isLiked, onToggleLike }: Props) {
   const supabase = createClient()
   const isOwner = !!currentUserId && post.user?.id === currentUserId
 
@@ -43,6 +48,16 @@ export default function PostCard({ post, onOpen, currentUserId, onDeleted }: Pro
     onDeleted(post.id)
   }
 
+const handleLikeClick = (e: React.MouseEvent) => {
+  e.stopPropagation() 
+
+  if (!currentUserId) {
+    alert('いいね機能を利用するにはログインが必要です。')
+    return
+  }
+  onToggleLike()
+}
+
   return (
     <article className="group overflow-hidden rounded-2xl border bg-white shadow-sm hover:shadow-md transition">
       <header className="flex items-center gap-3 border-b p-3">
@@ -51,8 +66,13 @@ export default function PostCard({ post, onOpen, currentUserId, onDeleted }: Pro
             <img src={post.user.avatar_url} alt="" className="h-full w-full object-cover" />
           )}
         </div>
-        <div className="min-w-0 flex-1 font-medium truncate">
+        <div className="min-w-0 flex-1 font-medium flex justify-between items-center">
+          <span className="truncate">
           {post.user?.username ?? 'ユーザー'}
+          </span>
+          <time className="text-xs text-gray-500 ml-2 flex-shrink-0" dateTime={post.created_at}>
+            {formatPostDate(post.created_at)}
+          </time>
         </div>
         {isOwner && (
           <button
@@ -92,15 +112,30 @@ export default function PostCard({ post, onOpen, currentUserId, onDeleted }: Pro
       </button>
 
       <footer className="flex items-center justify-between border-t p-3">
-        <button
-          className="flex items-center gap-1 text-sm text-gray-600 hover:underline"
-          onClick={onOpen}
-        >
-          <MessageCircle className="size-4" />
-          コメントを見る
-        </button>
-        <div className="ml-2 truncate text-sm text-gray-700">{post.title}</div>
-      </footer>
-    </article>
+        <div className="flex items-center gap-4">
+          <button
+           className="flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600"
+           onClick={onOpen}
+          >
+            <MessageCircle className="size-4" />
+            <span className="hidden sm:inline">コメント</span>
+          </button>
+          
+          <button
+          className="flex items-center gap-1 text-sm text-gray-600 hover:text-red-500"
+          onClick={handleLikeClick} 
+          >
+            <Heart
+              className={`size-4 ${isLiked ? 'text-red-500' : ''}`}
+              fill={isLiked ? 'currentColor' : 'none'} // 🔽 isLiked で塗りつぶしを切り替え
+            />
+            <span className={`min-w-[0.5rem] ${isLiked ? 'text-red-500' : ''}`}>
+              {likeCount}
+            </span>
+          </button>
+        </div>
+      <div className="ml-2 truncate text-sm text-gray-700">{post.title}</div>
+    </footer>
+  </article>
   )
 }

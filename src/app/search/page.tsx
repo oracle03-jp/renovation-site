@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Post } from '@/lib/types'
-import type { User } from '@supabase/supabase-js' // ★ User 型をインポート
+import type { SupabaseClient, User } from '@supabase/supabase-js'
+import type { Post, Like } from '@/lib/types'
 import NavigationBar from '@/components/ui/navigationbar' // ★ ナビゲーションバーをインポート
 import PostCard from '@/components/post/PostCard'
 import PostModal from '@/components/post/PostModal'
@@ -27,6 +27,7 @@ const SearchIcon = () => (
 
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [supabase] = useState<SupabaseClient>(() => createClient())
   const [results, setResults] = useState<Post[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -34,25 +35,71 @@ export default function SearchPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [user, setUser] = useState<User | null>(null) 
+  const [user, setUser] = useState<User | null>(null)
+  const [sortOrder, setSortOrder] = useState<'created_at' | 'likes'>('created_at') 
 
   useEffect(() => {
-    const supabase = createClient()
-    
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user) 
       setCurrentUserId(user?.id ?? null) 
     })
-  }, [])
-  // --- ★ ここまで修正 ---
+  }, [supabase])
 
   const handleDeleted = useCallback((id: string) => {
     setResults((prev) => prev.filter((p) => p.id !== id))
     setSelectedId((prev) => (prev === id ? null : prev))
   }, [])
 
-  const selected = results.find((p) => p.id === selectedId) ?? null
+  const handleToggleLike = useCallback(async (postId: string, isLiked: boolean) => {
+    if (!currentUserId) return
 
+    const newLikeData: Like = {
+      post_id: postId,
+      user_id: currentUserId,
+      created_at: new Date().toISOString(),
+    }
+
+    if (isLiked) {
+      setResults(prevResults =>
+        prevResults.map(post =>
+          post.id === postId
+            ? { ...post, likes: post.likes.filter(l => l.user_id !== currentUserId) }
+            : post
+        )
+      )
+      await supabase
+        .from('likes')
+        .delete()
+        .eq('post_id', postId)
+        .eq('user_id', currentUserId)
+
+    } else {
+      setResults(prevResults =>
+        prevResults.map(post =>
+          post.id === postId
+            ? { ...post, likes: [...post.likes, newLikeData] }
+            : post
+        )
+      )
+      await supabase
+        .from('likes')
+        .insert({ post_id: postId, user_id: currentUserId })
+    }
+  }, [currentUserId, supabase]) 
+
+  const sortedResults = useMemo(() => {
+    const newResults = [...results]
+    if (sortOrder === 'likes') {
+      newResults.sort((a, b) => b.likes.length - a.likes.length)
+    } else {
+      newResults.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    }
+    return newResults
+  }, [results, sortOrder])
+
+  const selected = results.find((p) => p.id === selectedId) ?? null
+  const selectedLikeCount = selected ? selected.likes.length : 0
+  const selectedIsLiked = selected ? selected.likes.some(l => l.user_id === currentUserId) : false
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!searchTerm.trim()) return
@@ -68,7 +115,7 @@ export default function SearchPage() {
         .select(
           `
           id, title, image_url, image_urls, author_comment, created_at,
-          user:profiles!user_id ( id, username, avatar_url )
+          user:profiles!user_id ( id, username, avatar_url ), likes(*)
         `
         )
         .ilike('title', `%${searchTerm}%`)
@@ -158,19 +205,50 @@ export default function SearchPage() {
             )}
             {!loading && results.length > 0 && (
               <>
+                <div className="flex justify-between items-center gap-2">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
                   検索結果: {results.length}件
                 </h2>
+                <div className="flex gap-2">
+                    <button
+                      onClick={() => setSortOrder('created_at')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        sortOrder === 'created_at'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      投稿順
+                    </button>
+                    <button
+                      onClick={() => setSortOrder('likes')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        sortOrder === 'likes'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      いいね順
+                    </button>
+                  </div>
+                </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {results.map((p) => (
+                  {sortedResults.map((p) => {
+                    const likeCount = p.likes.length
+                    const isLiked = p.likes.some(l => l.user_id === currentUserId)
+                    return (
                     <PostCard
                       key={p.id}
                       post={p}
                       onOpen={() => setSelectedId(p.id)}
                       currentUserId={currentUserId}
                       onDeleted={handleDeleted}
+                      likeCount={likeCount}
+                      isLiked={isLiked}
+                      onToggleLike={() => handleToggleLike(p.id, isLiked)}
                     />
-                  ))}
+                   )
+                 })}
                 </div>
                 <PostModal
                   post={selected}
@@ -178,6 +256,9 @@ export default function SearchPage() {
                   onOpenChange={(o) => !o && setSelectedId(null)}
                   currentUserId={currentUserId}
                   onDeleted={handleDeleted}
+                  likeCount={selectedLikeCount}
+                  isLiked={selectedIsLiked}
+                  onToggleLike={() => selected && handleToggleLike(selected.id, selectedIsLiked)}
                 />
               </>
             )}

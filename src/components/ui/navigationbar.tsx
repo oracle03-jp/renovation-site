@@ -15,7 +15,7 @@ type NavigationBarProps = {
 
 export default function NavigationBar({ user }: NavigationBarProps) {
   return (
-    <nav className="bg-[#004aad] text-white p-2 flex justify-between items-center fixed top-0 w-full z-10 
+    <nav className="bg-blue-600 text-white p-2 flex justify-between items-center fixed top-0 w-full z-10 
                    md:flex-col md:h-screen md:w-20 md:left-0 md:top-0 md:justify-start md:items-center md:p-2 md:space-y-6">
       
      <a href="/" className="relative group md:mb-10">

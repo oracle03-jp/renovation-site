@@ -91,6 +91,16 @@ export default function PostCreateForm() {
     if (e.target.files) addFiles(e.target.files)
   }
 
+  // ✅ 追加: 矢印ボタンで順序変更
+const moveImage = (fromIndex: number, toIndex: number) => {
+  if (toIndex < 0 || toIndex >= files.length) return
+  const newFiles = [...files]
+  const [movedFile] = newFiles.splice(fromIndex, 1)
+  newFiles.splice(toIndex, 0, movedFile)
+  setFiles(newFiles)
+}
+
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
@@ -180,12 +190,43 @@ export default function PostCreateForm() {
                 {/* プレビュー：レスポンシブグリッド */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {previews.map((p, i) => (
-                    <div key={i} className="relative group aspect-square">
+                    // ✅ 変更: ドラッグ可能なプレビューグリッド 
+                    <div key={i} className="relative group aspect-square">                    
                       <img
                         src={p.url}
                         alt={`プレビュー ${i + 1}`}
                         className="w-full h-full object-cover rounded-lg"
                       />
+                      
+                      {/* ✅ 追加: 順番表示バッジ */}
+                      <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        {i + 1}
+                      </div>
+                       {/* ✅ 追加: 矢印ボタン */}
+                      <div className="absolute bottom-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); moveImage(i, i - 1) }}
+                          disabled={i === 0}
+                          className="px-2 py-1 rounded bg-black/60 text-white text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/80"
+                          aria-label="左に移動"
+                          title="左に移動"
+                        >
+                          ←
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); moveImage(i, i + 1) }}
+                          disabled={i === files.length - 1}
+                          className="px-2 py-1 rounded bg-black/60 text-white text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/80"
+                          aria-label="右に移動"
+                          title="右に移動"
+                        >
+                          →
+                        </button>
+                      </div>
+
+                       {/* 既存 */}
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); removeAt(i) }}
@@ -197,6 +238,10 @@ export default function PostCreateForm() {
                     </div>
                   ))}
                 </div>
+                {/* ✅ 追加: 並び替えのヒント */}
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+                  矢印ボタン（←→）で順番を変更できます
+                </p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center p-6">

@@ -159,7 +159,8 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 shadow-none bg-transparent rounded-none sm:rounded-none max-w-none sm:max-w-none w-auto h-auto" style={fit ? { width: fit.modalW, height: fit.modalH} : undefined}>
+      <DialogContent className="p-0 shadow-none bg-transparent rounded-none sm:rounded-none max-w-none sm:max-w-none " style={fit ? { width: fit.modalW, height: fit.modalH} : undefined}>
+
         <DialogHeader className="sr-only">
           <DialogTitle>投稿詳細</DialogTitle>
         </DialogHeader>
@@ -285,7 +286,7 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
                 {isOwner && (
                   <button
                     onClick={handleDelete}
-                    className="rounded p-2 text-red-600 hover:bg-red-50"
+                    className="flex rounded p-2 mt-8 text-red-600 hover:bg-red-50"
                     aria-label="投稿を削除"
                     title="削除"
                   >

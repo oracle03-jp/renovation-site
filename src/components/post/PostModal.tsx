@@ -159,8 +159,7 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 shadow-none bg-transparent rounded-none sm:rounded-none max-w-none sm:max-w-none " style={fit ? { width: fit.modalW, height: fit.modalH} : undefined}>
-
+      <DialogContent className="p-0 shadow-none bg-transparent rounded-none sm:rounded-none max-w-none sm:max-w-none w-auto h-auto" style={fit ? { width: fit.modalW } : undefined}>
         <DialogHeader className="sr-only">
           <DialogTitle>投稿詳細</DialogTitle>
         </DialogHeader>

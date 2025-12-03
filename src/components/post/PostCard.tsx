@@ -118,7 +118,7 @@ const handleLikeClick = (e: React.MouseEvent) => {
            onClick={onOpen}
           >
             <MessageCircle className="size-4" />
-            <span className="hidden sm:inline">コメント</span>
+            {/* <span className="hidden sm:inline">コメント</span> */}
           </button>
           
           <button

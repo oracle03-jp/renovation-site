@@ -19,15 +19,11 @@ export default function NavigationBar({ user }: NavigationBarProps) {
                    md:flex-col md:h-screen md:w-20 md:left-0 md:top-0 md:justify-start md:items-center md:p-2 md:space-y-6">
       
      <a href="/" className="relative group md:mb-10">
-      {/* --- CHANGED ELEMENT --- */}
-       {/* Use an <img> tag with the imported path */}
-      {/* Added classes for size (w-10 h-10) and alt text for accessibility */}
       <img 
           src={HomeLogo.src} 
           alt="Akilier" 
           className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain transition-all duration-300" 
           />
-          {/* ポップアップ用のspanを追加 */}
           <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4
           w-auto min-w-max p-2 rounded-md shadow-md
           text-white bg-gray-900 text-sm font-bold
@@ -35,19 +31,17 @@ export default function NavigationBar({ user }: NavigationBarProps) {
             Home
             </span>
             </a>
-      {/* PC表示ではアイコンを中央に配置するためulタグを調整 */}
+      
       <ul className="flex space-x-4 md:flex-col md:space-x-0 md:space-y-6 md:w-full md:items-center">
         
         <li>
-          {/* 1. 親要素(a)に`group`と`relative`を追加 */}
           <a href="/search" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
             <SearchIcon />
-            {/* 2. `span`をツールチップのスタイルに変更 */}
             <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2
-                         w-auto min-w-max p-2 rounded-md shadow-md
-                         text-white bg-gray-900 text-sm font-bold
-                         transition-all duration-150 scale-0 origin-top group-hover:scale-100
-                         md:left-full md:top-1/2 md:-translate-y-1/2 md:-translate-x-0 md:mt-0 md:ml-4 md:origin-left">
+                          w-auto min-w-max p-2 rounded-md shadow-md
+                          text-white bg-gray-900 text-sm font-bold
+                          transition-all duration-150 scale-0 origin-top group-hover:scale-100
+                          md:left-full md:top-1/2 md:-translate-y-1/2 md:-translate-x-0 md:mt-0 md:ml-4 md:origin-left">
               検索
             </span>
           </a>
@@ -71,12 +65,22 @@ export default function NavigationBar({ user }: NavigationBarProps) {
         {user && (
           <li>
             <a href="/dashboard" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
-              <UserIcon />
+              {/* avatar_urlがあれば画像を表示、なければデフォルトアイコンを表示 */}
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt={user.user_metadata.username || "User"}
+                  className="w-11 h-11 rounded-full object-cover border-2 border-white/20"
+                />
+              ) : (
+                <UserIcon />
+              )}
+              
               <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2
                                w-auto min-w-max p-2 rounded-md shadow-md text-white bg-gray-900 text-sm font-bold
                                transition-all duration-150 scale-0 origin-top group-hover:scale-100
                                md:left-full md:top-1/2 md:-translate-y-1/2 md:-translate-x-0 md:mt-0 md:ml-4 md:origin-left">
-                {user.user_metadata.username}
+                {user.user_metadata.username || "マイページ"}
               </span>
             </a>
           </li>

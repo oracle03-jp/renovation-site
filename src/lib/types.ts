@@ -12,6 +12,7 @@ export type Post = {
     created_at: string
     user: Profile
     likes: Like[]
+    avatar_url: string | null
 }
 
 export type Comment = {

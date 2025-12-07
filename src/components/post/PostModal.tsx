@@ -6,7 +6,7 @@ import CommentInput from './comments/CommentInput'
 import type { Post } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { extractImagePath } from '@/lib/storage'
-import { Trash2, ChevronLeft, ChevronRight, ImageOff, Heart } from 'lucide-react'
+import { Trash2, ChevronLeft, ChevronRight, ImageOff, Heart, User } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { formatPostDate } from '@/lib/utils'
 
@@ -270,7 +270,38 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
             {/* 右：コメント */}
             <div className="flex h-full min-h-0 flex-col md:border-l bg-white">
               <section className="flex items-start justify-between border-b p-4">
-                <div className="space-y-1">
+                <div className="space-y-2 w-full">
+                  <div className="flex items-center gap-2.5">
+                    {/* アイコン枠 */}
+                    <div className="relative h-9 w-9 overflow-hidden rounded-full border bg-gray-100 flex-shrink-0">
+                      {post.user?.avatar_url ? (
+                        <img
+                          src={post.user.avatar_url}
+                          alt={post.user.username ?? 'User'}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            // 画像読み込みエラー時に非表示にする（背景のアイコンが出るようにする）
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                          }}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-gray-400">
+                          <User className="h-5 w-5" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* ユーザー名と日付 */}
+                    <div className="flex flex-col leading-tight">
+                      <span className="font-semibold text-sm text-gray-900">
+                        {post.user?.username ?? 'ユーザー'}
+                      </span>
+                      <time className="text-xs text-gray-500" dateTime={post.created_at}>
+                        {formatPostDate(post.created_at)}
+                      </time>
+                    </div>
+                  </div>
                   <div className="text-sm text-gray-500">
                     {post.user?.username ?? 'ユーザー'} のコメント
                   </div>

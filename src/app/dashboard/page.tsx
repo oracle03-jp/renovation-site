@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server"
 import SignOutButton from './signout'
 import NavigationBar from '@/components/ui/navigationbar'
 import { UserCircle, Edit, BookOpen } from 'lucide-react'
+// キャッシュ対策を追加
+import { unstable_noStore as noStore } from "next/cache"
 
 const PlusIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -11,9 +13,21 @@ const PlusIcon = () => (
 );
 
 export default async function Dashboard() {
+  noStore() // ダッシュボードでも最新のプロフィールを表示するためキャッシュ無効化
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  
   if (!user) redirect('/login')
+
+  // 【重要】Authメタデータではなく、Profilesテーブルから最新情報を取得
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single()
+
+  // 表示名の決定順序: Profileのユーザー名 -> Authのメタデータ -> メールアドレスの一部
+  const displayName = profile?.username || user.user_metadata?.username || user.email?.split('@')[0] || "ゲスト";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -24,7 +38,7 @@ export default async function Dashboard() {
           <div className="max-w-3xl mx-auto">
             <header className="mb-8">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
-                ようこそ、{user.user_metadata.username}さん
+                ようこそ、{displayName}さん
               </h1>
             </header>
 
@@ -32,18 +46,30 @@ export default async function Dashboard() {
               {/* プロフィールカード */}
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                 <div className="flex items-center space-x-4">
-                  <UserCircle className="w-16 h-16 text-gray-400 flex-shrink-0" />
+                  
+                  {/* アバター画像の有無で表示を切り替え */}
+                  {profile?.avatar_url ? (
+                     <img 
+                       src={profile.avatar_url} 
+                       alt="avatar" 
+                       className="w-16 h-16 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                     />
+                  ) : (
+                    <UserCircle className="w-16 h-16 text-gray-400 flex-shrink-0" />
+                  )}
+
                   <div className="flex-grow">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                      {user.user_metadata.username}
+                      {displayName}
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                      {user.email}
+                      {/* 自己紹介がある場合はそれを、なければメールアドレスを表示 */}
+                      {profile?.bio ? profile.bio : user.email}
                     </p>
                   </div>
                 </div>
                 <div className="mt-4 flex items-center gap-3">
-                  <a href="/dashboard/profile" className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-medium rounded-md transition-colors">
+                  <a href="/dashboard/profile" className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-medium rounded-md transition-colors text-gray-900 dark:text-white">
                     <Edit className="w-4 h-4" />
                     プロフィールを編集
                   </a>
@@ -61,7 +87,7 @@ export default async function Dashboard() {
                     <PlusIcon />
                     新しい投稿を作成
                   </a>
-                  <a href="/dashboard/posts" className="w-full flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                  <a href="/dashboard/posts" className="w-full flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors text-gray-900 dark:text-white">
                     <BookOpen className="w-5 h-5" />
                     自分の投稿一覧
                   </a>

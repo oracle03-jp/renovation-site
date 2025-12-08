@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { SupabaseClient, User } from '@supabase/supabase-js'
 import type { Post, Like } from '@/lib/types'
-import NavigationBar from '@/components/ui/navigationbar' // ★ ナビゲーションバーをインポート
+import NavigationBar from '@/components/ui/navigationbar' 
 import PostCard from '@/components/post/PostCard'
 import PostModal from '@/components/post/PostModal'
 
@@ -110,16 +110,29 @@ export default function SearchPage() {
     const supabase = createClient()
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('posts')
         .select(
           `
-          id, title, image_url, image_urls, author_comment, created_at,
+          id, title, image_url, image_urls, author_comment, created_at, tags,
           user:profiles!user_id ( id, username, avatar_url ), likes(*)
         `
         )
-        .ilike('title', `%${searchTerm}%`)
-        .order('created_at', { ascending: false })
+      const trimmedTerm = searchTerm.trim()
+      
+      if (trimmedTerm.startsWith('#')) {
+        // '#'で始まる場合はタグ完全一致検索 (例: "#kitchen")
+        const tagQuery = trimmedTerm.replace(/^#/, '') // #を除去
+        // tags配列に tagQuery が含まれているか (Postgres: tags @> {tagQuery})
+        query = query.contains('tags', [tagQuery])
+      } else {
+        // 通常検索: タイトルに含まれる OR タグに一致する
+        // "title" ILIKE '%term%' OR "tags" @> '{term}'
+        // Supabaseの.or()構文を使用
+        query = query.or(`title.ilike.%${trimmedTerm}%,tags.cs.{${trimmedTerm}}`)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
       if (data) setResults(data as any)
@@ -153,7 +166,7 @@ export default function SearchPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="タイトルを入力..."
+                placeholder="タイトル または #タグ で検索..."
                 className="flex-grow p-3 border border-gray-300 rounded-lg text-black
                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                            dark:bg-gray-700 dark:text-white dark:border-gray-600"

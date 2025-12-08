@@ -12,6 +12,7 @@ export type Post = {
     created_at: string
     user: Profile
     likes: Like[]
+    tags: string[]
 }
 
 export type Comment = {

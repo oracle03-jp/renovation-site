@@ -21,7 +21,7 @@ export default function PostGrid() {
       const { data } = await supabase
         .from('posts')
         .select(`
-          id, title, image_url, image_urls, author_comment, created_at,
+          id, title, image_url, image_urls, author_comment, created_at, tags,
           user:profiles!user_id ( id, username, avatar_url ),
           likes(*)
         `)

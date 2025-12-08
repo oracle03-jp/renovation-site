@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, type DragEvent, type FormEvent } from 'react'
+import { useState, useEffect, type DragEvent, type FormEvent, KeyboardEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 const UploadIcon = () => (
@@ -16,6 +16,12 @@ const SpinnerIcon = () => (
   </svg>
 )
 
+const XMarkIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+  </svg>
+)
+
 type PreviewItem = { file: File; url: string }
 
 export default function PostCreateForm() {
@@ -23,6 +29,8 @@ export default function PostCreateForm() {
   const [files, setFiles] = useState<File[]>([])               // 配列にすることで複数化
   const [previews, setPreviews] = useState<PreviewItem[]>([])  // 複数プレビュー
   const [authorComment, setAuthorComment] = useState('')
+  const [tagInput, setTagInput] = useState('')
+  const [tags, setTags] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
 
@@ -92,14 +100,31 @@ export default function PostCreateForm() {
   }
 
   // ✅ 追加: 矢印ボタンで順序変更
-const moveImage = (fromIndex: number, toIndex: number) => {
-  if (toIndex < 0 || toIndex >= files.length) return
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= files.length) return
   const newFiles = [...files]
   const [movedFile] = newFiles.splice(fromIndex, 1)
   newFiles.splice(toIndex, 0, movedFile)
   setFiles(newFiles)
-}
+  }
+  
+  const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault() 
+      const trimmed = tagInput.trim().replace(/^#/, '') 
+      
+      if (trimmed && !tags.includes(trimmed)) {
+        setTags([...tags, trimmed])
+        setTagInput('')
+      }
+    } else if (e.key === 'Backspace' && !tagInput && tags.length > 0) {
+      setTags(tags.slice(0, -1))
+    }
+  }
 
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove))
+  }
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -109,13 +134,17 @@ const moveImage = (fromIndex: number, toIndex: number) => {
     if (!user) return alert('ログインしてください')
     if (!title.trim()) return alert('タイトルを入力してください')
     if (files.length === 0) return alert('画像ファイルを選択してください')
-
+    let submitTags = [...tags] // すでに確定したタグ（青いチップ）
+    if (tagInput.trim()) {
+      const pendingTag = tagInput.trim().replace(/^#/, '') // 入力中の文字
+      if (!submitTags.includes(pendingTag)) {
+        submitTags.push(pendingTag)
+      }
+    }
     setLoading(true)
     try {
       // まとめてアップロード
-      const uploadedUrls: string[] = []
-
-      await Promise.all(
+      const uploadedUrls = await Promise.all(
         files.map(async (file) => {
           const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
           const filename = crypto.randomUUID()
@@ -129,7 +158,9 @@ const moveImage = (fromIndex: number, toIndex: number) => {
           if (uploadErr) throw uploadErr
 
           const { data: pub } = supabase.storage.from('images').getPublicUrl(filePath)
-          uploadedUrls.push(pub.publicUrl)
+          
+          // push ではなく return する
+          return pub.publicUrl
         })
       )
 
@@ -139,6 +170,7 @@ const moveImage = (fromIndex: number, toIndex: number) => {
         title,
         image_urls: uploadedUrls, // ← text[]（配列）を想定
         author_comment: authorComment,
+        tags: submitTags,
       })
 
       if (insertErr) throw insertErr
@@ -146,6 +178,8 @@ const moveImage = (fromIndex: number, toIndex: number) => {
       setTitle('')
       setFiles([])
       setAuthorComment('')
+      setTags([])
+      setTagInput('')
       alert('投稿しました！')
     } catch (err: any) {
       console.error(err)
@@ -172,7 +206,35 @@ const moveImage = (fromIndex: number, toIndex: number) => {
             required
           />
         </div>
-
+        <div>
+          <label htmlFor="tags" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+            ハッシュタグ <span className="text-gray-500 text-xs">(Enterで追加)</span>
+          </label>
+          <div className="flex flex-wrap items-center gap-2 p-2.5 bg-gray-50 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600">
+            {tags.map(tag => (
+              <span key={tag} className="inline-flex items-center px-2 py-1 mr-1 text-sm font-medium text-blue-800 bg-blue-100 rounded dark:bg-blue-900 dark:text-blue-300">
+                #{tag}
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="inline-flex items-center p-0.5 ml-2 text-sm text-blue-400 bg-transparent rounded-sm hover:bg-blue-200 hover:text-blue-900 dark:hover:bg-blue-800 dark:hover:text-blue-300"
+                  aria-label="Remove"
+                >
+                  <XMarkIcon />
+                </button>
+              </span>
+            ))}
+            <input
+              id="tags"
+              type="text"
+              className="flex-grow bg-transparent border-none focus:ring-0 text-gray-900 text-sm dark:text-white placeholder-gray-400 min-w-[120px]"
+              placeholder={tags.length === 0 ? "例: リノベーション おしゃれ (Enter)" : ""}
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleTagKeyDown}
+            />
+          </div>
+        </div>
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             物件の画像（複数可：PNG/JPG・最大{MAX_FILES}枚）

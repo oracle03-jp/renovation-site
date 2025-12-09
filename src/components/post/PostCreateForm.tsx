@@ -151,11 +151,11 @@ export default function PostCreateForm() {
           const filePath = `${user.id}/${filename}.${ext}`
 
           const { error: uploadErr } = await supabase
-            .storage
-            .from('images')
-            .upload(filePath, file, { upsert: false })
+          .storage
+          .from('images')
+          .upload(filePath, file, { upsert: false })
 
-          if (uploadErr) throw uploadErr
+        if (uploadErr) throw uploadErr
 
           const { data: pub } = supabase.storage.from('images').getPublicUrl(filePath)
           

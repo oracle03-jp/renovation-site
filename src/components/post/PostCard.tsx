@@ -30,23 +30,46 @@ export default function PostCard({ post, onOpen, currentUserId, onDeleted, likeC
 
   const [imgErr, setImgErr] = useState(false)
 
-  const handleDelete = async () => {
-    if (!isOwner) return
-    if (!confirm('この投稿を削除しますか？\n（画像とコメントも削除されます）')) return
+  // const handleDelete = async () => {
+  //   if (!isOwner) return
+  //   if (!confirm('この投稿を削除しますか？\n（画像とコメントも削除されます）')) return
 
-    // すべての画像を storage から削除（配列/単体どちらでも）
-    const candidates = imageUrls.length > 0 ? imageUrls : (post.image_url ? [post.image_url] : [])
-    for (const url of candidates) {
-      const path = extractImagePath(url)
-      if (path) {
-        try { await supabase.storage.from('images').remove([path]) } catch {}
-      }
-    }
+  //   // すべての画像を storage から削除（配列/単体どちらでも）
+  //   const candidates = imageUrls.length > 0 ? imageUrls : (post.image_url ? [post.image_url] : [])
+  //   for (const url of candidates) {
+  //     const path = extractImagePath(url)
+  //     if (path) {
+  //       try { await supabase.storage.from('images').remove([path]) } catch {}
+  //     }
+  //   }
 
-    const { error } = await supabase.from('posts').delete().eq('id', post.id)
-    if (error) return alert(error.message)
-    onDeleted(post.id)
+  //   const { error } = await supabase.from('posts').delete().eq('id', post.id)
+  //   if (error) return alert(error.message)
+  //   onDeleted(post.id)
+  // }
+
+const handleDelete = async () => {
+  if (!isOwner) return
+  if (!confirm('この投稿を削除しますか？\n（画像とコメントも削除されます）')) return
+
+  const candidates = imageUrls.length > 0 ? imageUrls : (post.image_url ? [post.image_url] : [])
+
+  for (const url of candidates) {
+    if (!url) continue   // ← ★ 追加：null / undefined はスキップ
+
+    const path = extractImagePath(url)
+    if (!path) continue  // ← ★ 追加：パス生成に失敗したらスキップ
+
+    try {
+      await supabase.storage.from('images').remove([path])
+    } catch {}
   }
+
+  const { error } = await supabase.from('posts').delete().eq('id', post.id)
+  if (error) return alert(error.message)
+  onDeleted(post.id)
+}
+
 
 const handleLikeClick = (e: React.MouseEvent) => {
   e.stopPropagation() 

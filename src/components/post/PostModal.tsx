@@ -23,14 +23,24 @@ type Props = {
 
 // Post に image_urls?: string[] を追加した想定。
 // 後方互換として image_url があればそれを配列化して使う。
+// function usePostImages(post: Post | null) {
+//   return useMemo(() => {
+//     if (!post) return [] as string[]
+//     const urls = Array.isArray((post as any).image_urls) ? (post as any).image_urls as string[] : []
+//     if (urls.length > 0) return urls
+//     return post.image_url ? [post.image_url] : []
+//   }, [post])
+// }
+// ✅ 修正: image_urls配列の変更も監視するように依存配列を修正
 function usePostImages(post: Post | null) {
   return useMemo(() => {
     if (!post) return [] as string[]
     const urls = Array.isArray((post as any).image_urls) ? (post as any).image_urls as string[] : []
     if (urls.length > 0) return urls
     return post.image_url ? [post.image_url] : []
-  }, [post])
+  }, [post, (post as any)?.image_urls])  // ← ここを修正
 }
+
 
 // シンプルなプリロード
 function usePreloadNeighbors(images: string[], index: number) {

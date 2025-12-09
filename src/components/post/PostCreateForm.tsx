@@ -112,24 +112,43 @@ const moveImage = (fromIndex: number, toIndex: number) => {
 
     setLoading(true)
     try {
-      // まとめてアップロード
-      const uploadedUrls: string[] = []
+      const uploadedUrls: string[] = new Array(files.length)
 
       await Promise.all(
-        files.map(async (file) => {
+        files.map(async (file, idx) => {
           const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
           const filename = crypto.randomUUID()
           const filePath = `${user.id}/${filename}.${ext}`
 
           const { error: uploadErr } = await supabase
-            .storage
-            .from('images')
-            .upload(filePath, file, { upsert: false })
+          .storage
+          .from('images')
+          .upload(filePath, file, { upsert: false })
 
-          if (uploadErr) throw uploadErr
+        if (uploadErr) throw uploadErr
 
-          const { data: pub } = supabase.storage.from('images').getPublicUrl(filePath)
-          uploadedUrls.push(pub.publicUrl)
+        const { data: pub } = supabase.storage.from('images').getPublicUrl(filePath)
+
+        // ←ここを push ではなく index で格納
+        uploadedUrls[idx] = pub.publicUrl
+      // まとめてアップロード
+      // const uploadedUrls: string[] = []
+
+      // await Promise.all(
+      //   files.map(async (file) => {
+      //     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+      //     const filename = crypto.randomUUID()
+      //     const filePath = `${user.id}/${filename}.${ext}`
+
+      //     const { error: uploadErr } = await supabase
+      //       .storage
+      //       .from('images')
+      //       .upload(filePath, file, { upsert: false })
+
+      //     if (uploadErr) throw uploadErr
+
+      //     const { data: pub } = supabase.storage.from('images').getPublicUrl(filePath)
+      //     uploadedUrls.push(pub.publicUrl)
         })
       )
 

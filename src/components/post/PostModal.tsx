@@ -23,14 +23,24 @@ type Props = {
 
 // Post に image_urls?: string[] を追加した想定。
 // 後方互換として image_url があればそれを配列化して使う。
+// function usePostImages(post: Post | null) {
+//   return useMemo(() => {
+//     if (!post) return [] as string[]
+//     const urls = Array.isArray((post as any).image_urls) ? (post as any).image_urls as string[] : []
+//     if (urls.length > 0) return urls
+//     return post.image_url ? [post.image_url] : []
+//   }, [post])
+// }
+// ✅ 修正: image_urls配列の変更も監視するように依存配列を修正
 function usePostImages(post: Post | null) {
   return useMemo(() => {
     if (!post) return [] as string[]
     const urls = Array.isArray((post as any).image_urls) ? (post as any).image_urls as string[] : []
     if (urls.length > 0) return urls
     return post.image_url ? [post.image_url] : []
-  }, [post])
+  }, [post, (post as any)?.image_urls])  // ← ここを修正
 }
+
 
 // シンプルなプリロード
 function usePreloadNeighbors(images: string[], index: number) {
@@ -308,6 +318,18 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
                   <p className="whitespace-pre-wrap text-gray-800">
                     {post.author_comment ?? '—'}
                   </p>
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 py-1.5">
+                      {post.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <time className="text-xs text-gray-500 pt-1" dateTime={post.created_at}>
                     {formatPostDate(post.created_at)}
                   </time>

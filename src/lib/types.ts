@@ -13,6 +13,7 @@ export type Post = {
     user: Profile
     likes: Like[]
     avatar_url: string | null
+    tags: string[]
 }
 
 export type Comment = {

@@ -7,7 +7,7 @@ import type { User } from '@supabase/supabase-js';
 const SearchIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg> );
 const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg> );
 const UserIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.5a3 3 0 11-6 0 3 3 0 016 0z" /></svg> );
-import HomeLogo from '../../images/HomeLogo.png';
+import HomeLogo from '../../images/Akilier2.png';
 
 type NavigationBarProps = {
   user: User | null;
@@ -15,15 +15,60 @@ type NavigationBarProps = {
 
 export default function NavigationBar({ user }: NavigationBarProps) {
   return (
-    <nav className="bg-blue-600 text-white p-2 flex justify-between items-center fixed top-0 w-full z-10 
-                   md:flex-col md:h-screen md:w-20 md:left-0 md:top-0 md:justify-start md:items-center md:p-2 md:space-y-6">
+      //旧サイドバーデザイン
+      // <nav className="bg-blue-600 text-white p-2 flex justify-between items-center fixed top-0 w-full z-10 
+      //                md:flex-col md:h-screen md:w-20 md:left-0 md:top-0 md:justify-start md:items-center md:p-2 md:space-y-6">
+      //案1：白
+      // <nav className="bg-white text-gray-800 p-2 flex justify-between items-center fixed top-0 w-full z-10 
+      //          md:flex-col md:h-screen md:w-20 md:left-0 md:top-0 md:justify-start md:items-center md:p-2 md:space-y-6 border-b md:border-b-0 md:border-r">
       
-     <a href="/" className="relative group md:mb-10">
-      <img 
+      //案2：グラデーション
+      // <nav className="
+      // bg-gradient-to-t from-blue-900 via-blue-300 to-white
+      // text-gray-800
+      // p-2 flex justify-between items-center
+      // fixed top-0 w-full z-10
+      // md:flex-col md:h-screen md:w-20 md:left-0 md:top-0
+      // md:justify-start md:items-center md:p-2 md:space-y-6
+      // border-b md:border-b-0 md:border-r">
+
+      //案3：青みグレー
+      // <nav className="
+      //   bg-gradient-to-b
+      //   from-white
+      //   via-blue-50
+      //   to-blue-100
+      //   text-gray-700
+      //   p-2 flex justify-between items-center
+      //   fixed top-0 w-full z-10
+      //   md:flex-col md:h-screen md:w-20 md:left-0 md:top-0
+      //   md:justify-start md:items-center md:p-3 md:space-y-6
+      //   border-r border-blue-100
+      // ">
+      //案4：少し濃い青みグレー
+      <nav className="
+        bg-gradient-to-b
+        from-white
+        via-blue-100
+        to-blue-200
+        text-slate-700
+        p-2 flex justify-between items-center
+        fixed top-0 w-full z-10
+        md:flex-col md:h-screen md:w-20 md:left-0 md:top-0
+        md:justify-start md:items-center md:p-3 md:space-y-6
+        border-r border-blue-200
+      ">
+
+
+     <a href="/" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
+      {/* <img 
           src={HomeLogo.src} 
           alt="Akilier" 
           className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain transition-all duration-300" 
-          />
+          /> */}
+          <img src={HomeLogo.src} 
+          alt="Akilier" className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain transition-all duration-300" />
+
           <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4
           w-auto min-w-max p-2 rounded-md shadow-md
           text-white bg-gray-900 text-sm font-bold
@@ -37,6 +82,7 @@ export default function NavigationBar({ user }: NavigationBarProps) {
         <li>
           <a href="/search" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
             <SearchIcon />
+
             <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2
                           w-auto min-w-max p-2 rounded-md shadow-md
                           text-white bg-gray-900 text-sm font-bold

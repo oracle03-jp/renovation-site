@@ -9,6 +9,7 @@ import { extractImagePath } from '@/lib/storage'
 import { Trash2, ChevronLeft, ChevronRight, ImageOff, Heart, User } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { formatPostDate } from '@/lib/utils'
+import Link from 'next/link'
 
 type Props = {
   post: Post | null
@@ -321,12 +322,14 @@ export default function PostModal({ post, open, onOpenChange, currentUserId, onD
                   {post.tags && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 py-1.5">
                       {post.tags.map((tag) => (
-                        <span
+                        <Link
                           key={tag}
+                          href={`/search?q=%23${encodeURIComponent(tag)}`}
+                          onClick={() => onOpenChange(false)}
                           className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10"
                         >
                           #{tag}
-                        </span>
+                        </Link>
                       ))}
                     </div>
                   )}

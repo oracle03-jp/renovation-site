@@ -7,6 +7,7 @@ import type { Post, Like } from '@/lib/types'
 import NavigationBar from '@/components/ui/navigationbar' 
 import PostCard from '@/components/post/PostCard'
 import PostModal from '@/components/post/PostModal'
+import { useSearchParams } from 'next/navigation'
 
 const SearchIcon = () => (
   <svg
@@ -36,7 +37,9 @@ export default function SearchPage() {
   
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
-  const [sortOrder, setSortOrder] = useState<'created_at' | 'likes'>('created_at') 
+  const [sortOrder, setSortOrder] = useState<'created_at' | 'likes'>('created_at')
+  const searchParams = useSearchParams()
+  const initialQuery = searchParams.get('q') 
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -100,9 +103,8 @@ export default function SearchPage() {
   const selected = results.find((p) => p.id === selectedId) ?? null
   const selectedLikeCount = selected ? selected.likes.length : 0
   const selectedIsLiked = selected ? selected.likes.some(l => l.user_id === currentUserId) : false
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!searchTerm.trim()) return
+  const executeSearch = useCallback(async (term: string) => {
+    if (!term.trim()) return
 
     setLoading(true)
     setError(null)
@@ -112,23 +114,18 @@ export default function SearchPage() {
     try {
       let query = supabase
         .from('posts')
-        .select(
-          `
-          id, title, image_url, image_urls, author_comment, created_at, tags,
-          user:profiles!user_id ( id, username, avatar_url ), likes(*)
-        `
-        )
-      const trimmedTerm = searchTerm.trim()
+        .select(`
+  id, title, image_url, image_urls, author_comment, created_at, tags,
+  user:profiles!user_id ( id, username, avatar_url ), likes(*)
+  `)
+      const trimmedTerm = term.trim()
       
+      // ▼ ここがポイント：URLから '#' 付きで来れば、このif文に入りタグ検索になります
       if (trimmedTerm.startsWith('#')) {
-        // '#'で始まる場合はタグ完全一致検索 (例: "#kitchen")
-        const tagQuery = trimmedTerm.replace(/^#/, '') // #を除去
-        // tags配列に tagQuery が含まれているか (Postgres: tags @> {tagQuery})
+        const tagQuery = trimmedTerm.replace(/^#/, '')
         query = query.contains('tags', [tagQuery])
       } else {
-        // 通常検索: タイトルに含まれる OR タグに一致する
-        // "title" ILIKE '%term%' OR "tags" @> '{term}'
-        // Supabaseの.or()構文を使用
+        // '#' がなければ今まで通りの検索になります
         query = query.or(`title.ilike.%${trimmedTerm}%,tags.cs.{${trimmedTerm}}`)
       }
 
@@ -137,11 +134,23 @@ export default function SearchPage() {
       if (error) throw error
       if (data) setResults(data as any)
     } catch (error: any) {
-      console.error('検索エラー:', error.message)
-      setError('検索中にエラーが発生しました。')
+      // ...エラー処理
     } finally {
       setLoading(false)
     }
+  }, []) // 依存配列は空でOK
+
+  // 4. ページを開いたときに自動実行する useEffect を追加
+  useEffect(() => {
+    if (initialQuery) {
+      setSearchTerm(initialQuery) // 検索窓にも '#海' と表示される
+      executeSearch(initialQuery) // 検索実行
+    }
+  }, [initialQuery, executeSearch])
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    executeSearch(searchTerm)
   }
 
   return (

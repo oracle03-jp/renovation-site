@@ -59,14 +59,45 @@ export default function NavigationBar({ user }: NavigationBarProps) {
         border-r border-blue-200
       ">
 
+      <a href="/" className="relative group flex items-center p-2 rounded-full hover:bg-gray-400 transition-colors">
+        <div className="
+          w-12 h-12
+          rounded-full
+          flex items-center justify-center
+          bg-white
+        ">
+          <img
+            src={HomeLogo.src}
+            alt="Akilier"
+            className="
+              w-9 h-9
+              object-contain
+              transition-transform duration-200
+              group-hover:scale-105
+            "
+          />
+        </div>
 
-     <a href="/" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
+        <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4
+          w-auto min-w-max p-2 rounded-md shadow-md
+          text-white bg-gray-900 text-sm font-bold
+          transition-all duration-150 scale-0 group-hover:scale-100 origin-left">
+          Home
+        </span>
+      </a>
+
+
+
+     {/* <a href="/" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors"> */}
+     {/* <a  href="/" className="relative group flex items-center p-2 rounded-full hover:bg-gray-400 transition-colors"> */}
+     {/* <a  href="/" className="relative group flex items-center p-2 rounded-full hover:bg-gray-400 transition-colors"> */}
+
       {/* <img 
           src={HomeLogo.src} 
           alt="Akilier" 
           className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain transition-all duration-300" 
           /> */}
-          <img src={HomeLogo.src} 
+          {/* <img src={HomeLogo.src} 
           alt="Akilier" className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-contain transition-all duration-300" />
 
           <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4
@@ -75,12 +106,14 @@ export default function NavigationBar({ user }: NavigationBarProps) {
           transition-all duration-150 scale-0 group-hover:scale-100 origin-left">
             Home
             </span>
-            </a>
+            </a> */}
       
       <ul className="flex space-x-4 md:flex-col md:space-x-0 md:space-y-6 md:w-full md:items-center">
         
         <li>
-          <a href="/search" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
+          {/* <a href="/search" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors"> */}
+          <a  href="/search" className="relative group flex items-center p-2 rounded-full hover:bg-gray-400 transition-colors">
+
             <SearchIcon />
 
             <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2
@@ -95,7 +128,8 @@ export default function NavigationBar({ user }: NavigationBarProps) {
 
         {user && (
           <li>
-            <a href="/post/create" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
+            {/* <a href="/post/create" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors"> */}
+            <a  href="/post/create" className="relative group flex items-center p-2 rounded-full hover:bg-gray-400 transition-colors">
               <PlusIcon />
               <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2
                            w-auto min-w-max p-2 rounded-md shadow-md
@@ -110,7 +144,8 @@ export default function NavigationBar({ user }: NavigationBarProps) {
 
         {user && (
           <li>
-            <a href="/dashboard" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors">
+            {/* <a href="/dashboard" className="relative group flex items-center p-2 rounded-full hover:bg-blue-700 transition-colors"> */}
+            <a  href="/dashboard" className="relative group flex items-center p-2 rounded-full hover:bg-gray-400 transition-colors">
               {/* avatar_urlがあれば画像を表示、なければデフォルトアイコンを表示 */}
               {user.user_metadata?.avatar_url ? (
                 <img

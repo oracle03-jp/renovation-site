@@ -21,7 +21,9 @@ export default async function Home() {
             relative
             bg-gradient-to-br from-[#004AAD] via-blue-500 to-cyan-400
             text-white
-            pt-24 pb-12 px-6    /* pb-16→pb-12 に少し余白を詰めました */
+            pt-32 pb-20
+            md:pt-24 md:pb-12 
+            px-6    /* pb-16→pb-12 に少し余白を詰めました */
           "
         >
           <div className="max-w-4xl mx-auto text-center">

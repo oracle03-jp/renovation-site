@@ -26,8 +26,13 @@ type PreviewItem = { file: File; url: string }
 
 export default function PostCreateForm() {
   const [title, setTitle] = useState('')
-  const [files, setFiles] = useState<File[]>([])               // 配列にすることで複数化
-  const [previews, setPreviews] = useState<PreviewItem[]>([])  // 複数プレビュー
+  const [files, setFiles] = useState<File[]>([])
+  const [previews, setPreviews] = useState<PreviewItem[]>([])
+  
+  // ✅ 追加: 詳細情報のState
+  const [cost, setCost] = useState('')
+  const [tools, setTools] = useState('')
+
   const [authorComment, setAuthorComment] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
@@ -48,7 +53,6 @@ export default function PostCreateForm() {
   const addFiles = (list: FileList | File[]) => {
     const incoming = Array.from(list)
 
-    // 型・サイズフィルタ
     const filtered = incoming.filter(f => {
       const okType = ACCEPTED_TYPES.includes(f.type)
       const okSize = f.size <= MAX_SIZE_MB * 1024 * 1024
@@ -59,7 +63,6 @@ export default function PostCreateForm() {
       alert(`PNG/JPG かつ ${MAX_SIZE_MB}MB 以下のファイルのみアップロード可能です。`)
     }
 
-    // 既存と重複しないように（name+size+lastModifiedで一応判定）
     const merged = [...files]
     for (const f of filtered) {
       const dup = merged.some(
@@ -70,7 +73,7 @@ export default function PostCreateForm() {
 
     if (merged.length > MAX_FILES) {
       alert(`一度に最大 ${MAX_FILES} 枚までです。`)
-      merged.splice(MAX_FILES) // 超過分カット
+      merged.splice(MAX_FILES)
     }
     setFiles(merged)
   }
@@ -99,13 +102,12 @@ export default function PostCreateForm() {
     if (e.target.files) addFiles(e.target.files)
   }
 
-  // ✅ 追加: 矢印ボタンで順序変更
   const moveImage = (fromIndex: number, toIndex: number) => {
     if (toIndex < 0 || toIndex >= files.length) return
-  const newFiles = [...files]
-  const [movedFile] = newFiles.splice(fromIndex, 1)
-  newFiles.splice(toIndex, 0, movedFile)
-  setFiles(newFiles)
+    const newFiles = [...files]
+    const [movedFile] = newFiles.splice(fromIndex, 1)
+    newFiles.splice(toIndex, 0, movedFile)
+    setFiles(newFiles)
   }
   
   const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -134,16 +136,17 @@ export default function PostCreateForm() {
     if (!user) return alert('ログインしてください')
     if (!title.trim()) return alert('タイトルを入力してください')
     if (files.length === 0) return alert('画像ファイルを選択してください')
-    let submitTags = [...tags] // すでに確定したタグ（青いチップ）
+    
+    let submitTags = [...tags]
     if (tagInput.trim()) {
-      const pendingTag = tagInput.trim().replace(/^#/, '') // 入力中の文字
+      const pendingTag = tagInput.trim().replace(/^#/, '')
       if (!submitTags.includes(pendingTag)) {
         submitTags.push(pendingTag)
       }
     }
+
     setLoading(true)
     try {
-      // まとめてアップロード
       const uploadedUrls = await Promise.all(
         files.map(async (file) => {
           const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
@@ -155,22 +158,22 @@ export default function PostCreateForm() {
           .from('images')
           .upload(filePath, file, { upsert: false })
 
-        if (uploadErr) throw uploadErr
+          if (uploadErr) throw uploadErr
 
           const { data: pub } = supabase.storage.from('images').getPublicUrl(filePath)
-          
-          // push ではなく return する
           return pub.publicUrl
         })
       )
 
-      // posts テーブル：text[] の image_urls 列を想定
+      // ✅ 修正: cost と tools をinsertに追加
       const { error: insertErr } = await supabase.from('posts').insert({
         user_id: user.id,
         title,
-        image_urls: uploadedUrls, // ← text[]（配列）を想定
+        image_urls: uploadedUrls,
         author_comment: authorComment,
         tags: submitTags,
+        cost: cost,   // 追加
+        tools: tools, // 追加
       })
 
       if (insertErr) throw insertErr
@@ -180,6 +183,8 @@ export default function PostCreateForm() {
       setAuthorComment('')
       setTags([])
       setTagInput('')
+      setCost('')  // リセット
+      setTools('') // リセット
       alert('投稿しました！')
     } catch (err: any) {
       console.error(err)
@@ -206,6 +211,7 @@ export default function PostCreateForm() {
             required
           />
         </div>
+
         <div>
           <label htmlFor="tags" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             ハッシュタグ <span className="text-gray-500 text-xs">(Enterで追加)</span>
@@ -235,6 +241,7 @@ export default function PostCreateForm() {
             />
           </div>
         </div>
+
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
             物件の画像（複数可：PNG/JPG・最大{MAX_FILES}枚）
@@ -249,30 +256,23 @@ export default function PostCreateForm() {
           >
             {previews.length > 0 ? (
               <div className="w-full p-3">
-                {/* プレビュー：レスポンシブグリッド */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {previews.map((p, i) => (
-                    // ✅ 変更: ドラッグ可能なプレビューグリッド 
                     <div key={i} className="relative group aspect-square">                    
                       <img
                         src={p.url}
                         alt={`プレビュー ${i + 1}`}
                         className="w-full h-full object-cover rounded-lg"
                       />
-                      
-                      {/* ✅ 追加: 順番表示バッジ */}
                       <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                         {i + 1}
                       </div>
-                       {/* ✅ 追加: 矢印ボタン */}
                       <div className="absolute bottom-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           type="button"
                           onClick={(e) => { e.preventDefault(); moveImage(i, i - 1) }}
                           disabled={i === 0}
                           className="px-2 py-1 rounded bg-black/60 text-white text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/80"
-                          aria-label="左に移動"
-                          title="左に移動"
                         >
                           ←
                         </button>
@@ -281,26 +281,20 @@ export default function PostCreateForm() {
                           onClick={(e) => { e.preventDefault(); moveImage(i, i + 1) }}
                           disabled={i === files.length - 1}
                           className="px-2 py-1 rounded bg-black/60 text-white text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/80"
-                          aria-label="右に移動"
-                          title="右に移動"
                         >
                           →
                         </button>
                       </div>
-
-                       {/* 既存 */}
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); removeAt(i) }}
                         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 rounded bg-black/60 text-white"
-                        aria-label="この画像を削除"
                       >
                         削除
                       </button>
                     </div>
                   ))}
                 </div>
-                {/* ✅ 追加: 並び替えのヒント */}
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
                   矢印ボタン（←→）で順番を変更できます
                 </p>
@@ -319,10 +313,40 @@ export default function PostCreateForm() {
               type="file"
               className="hidden"
               accept={ACCEPTED_TYPES.join(',')}
-              multiple                                          // ← 複数選択
+              multiple
               onChange={onFileInput}
             />
           </label>
+        </div>
+
+        {/* ✅ 追加: 詳細情報入力欄（2列レイアウト） */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="cost" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              かかった費用 <span className="text-gray-500 text-xs">(任意)</span>
+            </label>
+            <input
+              id="cost"
+              type="text"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white transition"
+              placeholder="例: 約5,000円"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="tools" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              使った道具 <span className="text-gray-500 text-xs">(任意)</span>
+            </label>
+            <input
+              id="tools"
+              type="text"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white transition"
+              placeholder="例: 電動ドライバー, ペンキ"
+              value={tools}
+              onChange={(e) => setTools(e.target.value)}
+            />
+          </div>
         </div>
 
         <div>
